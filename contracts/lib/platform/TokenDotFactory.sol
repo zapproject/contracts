@@ -55,7 +55,7 @@ contract TokenDotFactory is Ownable {
         tokenFactory = TokenFactoryInterface(factory);
 
         RegistryInterface registry = RegistryInterface(coord.getContract("REGISTRY")); 
-        registry.initiateProvider(providerPubKey, providerTitle);
+        // registry.initiateProvider(providerPubKey, providerTitle);
     }
 
     function initializeCurve(

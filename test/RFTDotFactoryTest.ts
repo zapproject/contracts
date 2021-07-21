@@ -70,16 +70,17 @@ describe('Testing', () => {
       signers[0]
     );
         const dbFactory = await ethers.getContractFactory('Database', signers[0]);
+    dataBase = (await dbFactory.deploy()) as Database;
 
     const bondFactory = await ethers.getContractFactory('Bondage', signers[0]);
      zapToken = (await zapTokenFactory.deploy()) as ZapToken;
      cost = (await costFactory.deploy(coordinator.address)) as CurrentCost;
 
      registry = (await registryFactory.deploy(coordinator.address)) as Registry;
-    // await coordinator.addImmutableContract('DATABASE', dataBase.address);
+    await coordinator.addImmutableContract('DATABASE', dataBase.address);
     
     await coordinator.addImmutableContract('ZAP_TOKEN', zapToken.address);
-    // await coordinator.updateContract('REGISTRY', registry.address);
+    await coordinator.updateContract('REGISTRY', registry.address);
     //     await coordinator.updateContract('CURRENT_COST', cost.address);
 
     await zapToken.deployed();

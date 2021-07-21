@@ -80,11 +80,11 @@ contract RFTDotFactory is Ownable {
         coord = ZapCoordinatorInterface(coordinator); 
         reserveToken = FactoryTokenInterface(coord.getContract("ZAP_TOKEN"));
         //always allow bondage to transfer from wallet
-        // reserveToken.approve(coord.getContract("BONDAGE"), ~uint256(0));
+        reserveToken.approve(coord.getContract("BONDAGE"), ~uint256(0));
         tokenFactory = RFTFactoryInterface(factory);
         fee = ownerfee;
         RegistryInterface registry = RegistryInterface(coord.getContract("REGISTRY")); 
-        // registry.initiateProvider(providerPubKey, providerTitle);
+        registry.initiateProvider(providerPubKey, providerTitle);
     }
 
     function initializeCurve(
