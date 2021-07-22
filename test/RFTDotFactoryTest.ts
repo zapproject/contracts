@@ -77,11 +77,16 @@ describe('Testing', () => {
      cost = (await costFactory.deploy(coordinator.address)) as CurrentCost;
 
      registry = (await registryFactory.deploy(coordinator.address)) as Registry;
+
+    await dataBase.transferOwnership(coordinator.address);
     await coordinator.addImmutableContract('DATABASE', dataBase.address);
-    
     await coordinator.addImmutableContract('ZAP_TOKEN', zapToken.address);
     await coordinator.updateContract('REGISTRY', registry.address);
-    //     await coordinator.updateContract('CURRENT_COST', cost.address);
+        await coordinator.updateContract('CURRENT_COST', cost.address);
+        
+    bondage = (await bondFactory.deploy(coordinator.address)) as Bondage;
+    await coordinator.updateContract('BONDAGE', bondage.address);
+    await coordinator.updateAllDependencies();
 
     await zapToken.deployed();
 
