@@ -15,9 +15,10 @@ interface RFTTokenInterface  {
      event ApprovalForAll(address indexed account, address indexed operator, bool approved);
     event URI(string value, uint256 indexed id);
 
-            function _mint(address account,uint256 id,uint256 amount,bytes calldata data) external;
+            function mint(address account,uint256 id,uint256 amount,bytes calldata data) external;
             function _mintBatch(address to,uint256[] calldata ids,uint256[] calldata amounts,bytes calldata data) external;
-            function _burn(address account,uint256 id, uint256 amount) external;
+            function burn(address account,uint256 id, uint256 amount) external;
+            function burnFrom(address account,uint256 id, uint256 amount) external;
             function _burnBatch(address account,uint256[] calldata ids,uint256[] calldata amounts) external; 
             function balanceOf(address _owner) external view returns (uint256);
             function balanceOfBatch(address[] calldata accounts, uint256[] calldata ids)external view returns (uint256[] memory);
@@ -112,7 +113,7 @@ contract RFTDotFactory is Ownable {
     event Bonded(bytes32 indexed specifier, uint256 indexed numDots, address indexed sender); 
 
     //whether this contract holds tokens or coming from msg.sender,etc
-    function bond(bytes32 specifier, uint numDots, bytes memory data) public  {
+    function bond(bytes32 specifier, uint numDots) public  {
 
         bondage = BondageInterface(coord.getContract("BONDAGE"));
         uint256 issued = bondage.getDotsIssued(address(this), specifier);
@@ -128,7 +129,7 @@ contract RFTDotFactory is Ownable {
         uint id= uint(keccak256(abi.encodePacked(specifier)));//+tokensMinted[specifier];
         reserveToken.approve(address(bondage), numReserve);
         bondage.bond(address(this), specifier, numDots);
-        RFTTokenInterface(curves[specifier])._mint(msg.sender, id, numDots,data);
+        RFTTokenInterface(curves[specifier]).mint(msg.sender, id, numDots,"");
         emit Bonded(specifier, numDots, msg.sender);
 
     }
@@ -150,7 +151,7 @@ contract RFTDotFactory is Ownable {
         //burn dot backed token
         uint id= uint(keccak256(abi.encodePacked(specifier)));
         RFTTokenInterface curveToken = RFTTokenInterface(curves[specifier]);
-        curveToken._burn(msg.sender, id, numDots);
+        curveToken.burnFrom(msg.sender, id, numDots);
 
         require(reserveToken.transfer(msg.sender, reserveCost), "Error: Transfer failed");
         emit Unbonded(specifier, numDots, msg.sender);
