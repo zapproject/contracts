@@ -30,6 +30,7 @@
     let RFTDotFactoryInstance:any;
     let RFTDotFactoryFactoryInstance:any;
     let zapToken: ZapToken;
+
   
   let dataBase: Database;
   let bondage: Bondage;
@@ -46,6 +47,7 @@ const zeroAddress = '0x0000000000000000000000000000000000000000';
   const specifier =
   '0x048a2991c2676296b330734992245f5ba6b98174d3f1907d795b7639e92ce577';
   const piecewiseFunction = [3, 0, 0, 2, 10000];
+  const fee = 2;
 
 describe('Testing', () => {
     
@@ -95,7 +97,7 @@ describe('Testing', () => {
     await coordinator.addImmutableContract('DATABASE', dataBase.address);
     await coordinator.addImmutableContract('ZAP_TOKEN', zapToken.address);
     await coordinator.updateContract('REGISTRY', registry.address);
-        await coordinator.updateContract('CURRENT_COST', cost.address);
+    await coordinator.updateContract('CURRENT_COST', cost.address);
 
     bondage = (await bondFactory.deploy(coordinator.address)) as Bondage;
     await coordinator.updateContract('BONDAGE', bondage.address);
@@ -112,7 +114,7 @@ describe('Testing', () => {
          // RFTDotFactoryFactoryInstance = (await rftDotFactoryFactory.deploy(coordinator.address, RFTTokenFactory.address)) as RftDotFactoryFactory;
         await RFTDotFactoryFactoryInstance.deployed();
         rftDotFactory = await ethers.getContractFactory('RFTDotFactory',signers[0]);
-        // RFTDotFactoryInstance = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2)
+        // RFTDotFactoryInstance = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee)
 
  
    
@@ -134,20 +136,19 @@ describe('Testing', () => {
   }
     it('TOKEN_DOT_FACTORY_1 - constructor() - Check token dot factory initialization', async function () {
     console.log(rftDotFactory.address);
-    RFTDotFactoryInstance = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2)
+    RFTDotFactoryInstance = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee)
   });
     it('TOKEN_DOT_FACTORY_2 - newToken() - Check new token creation', async function () {
-    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2)
+    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee)
     await factory.deployed();
-    let tx = await factory.newToken('t1');
+    let tx = await factory.newToken('https://storageapi.fleek.co/pynchmeister-team-bucket/04ea6647-b5fd-48b5-86bb-dc33412ee341');
     tx = await tx.wait();
-
     await expect(
       ethers.utils.getAddress(ethers.utils.hexStripZeros(tx.logs[0].topics[2]))
     ).to.equal(factory.address);
   });
     it('TOKEN_DOT_FACTORY_3 - initializeCurve() - Check curve initialization', async function () {
-    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2);
+    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee);
     let tx = await factory.initializeCurve(specifier, title, piecewiseFunction);
     tx = await tx.wait();
     console.log(tx);
@@ -157,10 +158,10 @@ describe('Testing', () => {
     await expect(dotTokenCreatedEvent).to.be.not.equal(null);
   });
     it('TOKEN_DOT_FACTORY_4 - initializeCurve() - Exception thrown if curve specifier already exists', async function () {
-    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2)
+    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee)
     let tx = await factory.initializeCurve(specifier, title, piecewiseFunction);
     tx = await tx.wait();
-    console.log(tx);
+    // console.log(tx);
     let dotTokenCreatedEvent = findEvent(tx.events, 'DotTokenCreated');
     await expect(dotTokenCreatedEvent).to.be.not.equal(null);
 
@@ -168,22 +169,29 @@ describe('Testing', () => {
       .to.reverted;
   });
     it('TOKEN_DOT_FACTORY_5 - bond() - Check bonding', async function () {
-    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2)
+    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee)
     await factory.initializeCurve(specifier, title2, piecewiseFunction);
     let reserveTokenAddr = await factory.reserveToken();
     let reserveToken = await zapToken.attach(reserveTokenAddr);
     await reserveToken.allocate(subscriber.address, 10000);
     await reserveToken.connect(subscriber).approve(factory.address, 10000);
-    await factory.connect(subscriber).bond(specifier, 1);
-
+    let issued = await bondage.getDotsIssued(factory.address, specifier);
+    // console.log(issued.add(1));
+    let fcost = await cost._costOfNDots(factory.address, specifier,issued.add(1),0);
     let subBalance = parseInt(
       (await reserveToken.balanceOf(subscriber.address)).toString()
     );
     console.log(subBalance);
+    await factory.connect(subscriber).bond(specifier, 1);
+    subBalance = parseInt(
+      (await reserveToken.balanceOf(subscriber.address)).toString()
+    );
+    console.log(10000-subBalance);
     await expect(subBalance).to.be.not.equal(10000);
+    await expect(10000-subBalance).to.be.equal(parseInt(fcost.toString())+fee);
   });
     it('TOKEN_DOT_FACTORY_6 - bond() - Check that user can not bond without tokens', async function () {
-    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2)
+    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee)
     await factory.initializeCurve(specifier, title2, piecewiseFunction);
     let reserveTokenAddr = await factory.reserveToken();
     let reserveToken = await zapToken.attach(reserveTokenAddr);
@@ -192,7 +200,7 @@ describe('Testing', () => {
     await expect(factory.connect(subscriber).bond(specifier, 1)).to.reverted;
   });
     it('TOKEN_DOT_FACTORY_7 - unbond() - Check unbonding', async function () {
-    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2);
+    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee);
     await factory.initializeCurve(specifier, title2, piecewiseFunction);
     let reserveTokenAddr = await factory.reserveToken();
     let reserveToken = await zapToken.attach(reserveTokenAddr);
@@ -208,7 +216,7 @@ describe('Testing', () => {
     await factory.connect(subscriber).unbond(specifier, 1);
   });
     it('TOKEN_DOT_FACTORY_8 - unbond() - Check that user can not unbond more than have', async function () {
-    let factory =  await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2);
+    let factory =  await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee);
     await factory.initializeCurve(specifier, title2, piecewiseFunction);
     let reserveTokenAddr = await factory.reserveToken();
     let reserveToken = await zapToken.attach(reserveTokenAddr);
@@ -225,13 +233,13 @@ describe('Testing', () => {
       .reverted;
   });
     it('TOKEN_DOT_FACTORY_9 - getTokenAddress() - Check curve token address', async function () {
-    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,2);
+    let factory = await rftDotFactory.deploy(coordinator.address, RFTTokenFactory.address,77,title,fee);
     await factory.initializeCurve(specifier, title2, piecewiseFunction);
     let curveTokenAddr = await factory.getTokenAddress(specifier);
     await expect(curveTokenAddr).to.not.equal(zeroAddress);
   });
     it('TOKEN_DOT_FACTORY_10 -deploy through dot factory Factory ', async function () {
-    let factory = await RFTDotFactoryFactoryInstance.deployFactory(77,title,2);
+    let factory = await RFTDotFactoryFactoryInstance.deployFactory(77,title,fee);
     // let rftDotFactoryFactory.deploy(coordinator.address, RFTTokenFactory.address) as unknown as RftDotFactoryFactory;
     let factories=await RFTDotFactoryFactoryInstance.getFactories();
    // console.log(factories) 
@@ -241,4 +249,5 @@ describe('Testing', () => {
     let curveTokenAddr = await Instantiated.getTokenAddress(specifier);
     await expect(curveTokenAddr).to.not.equal(zeroAddress);
   });
+    
 });
