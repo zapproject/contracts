@@ -1,88 +1,89 @@
+import { SSL_OP_MSIE_SSLV2_RSA_PADDING } from "constants";
 import { ethers } from "hardhat";
 
 const hre = require("hardhat")
-const fs = require('fs')
+//  const fs = require('fs')
 
-const curveParams1 = [3, 0, 0, 2, 1000];
-const curveParams2 = [3, 1, 2, 3, 1000];
-const curveParams3 = [1, 10, 1000];
-const curveParams4 = [3, 1, 2, 3, 10, 1, 2, 20];
+// const curveParams1 = [3, 0, 0, 2, 1000];
+// const curveParams2 = [3, 1, 2, 3, 1000];
+// const curveParams3 = [1, 10, 1000];
+// const curveParams4 = [3, 1, 2, 3, 10, 1, 2, 20];
 
-const publicKey = 77
-const title = '0x048a2991c2676296b330734992245f5ba6b98174d3f1907d795b7639e92ce532';
-const routeKeys = [1];
-const params = ["param1", "param2"];
+//const publicKey = 77
+//const title = '0x048a2991c2676296b330734992245f5ba6b98174d3f1907d795b7639e92ce532';
+//const routeKeys = [1];
+//const params = ["param1", "param2"];
 
-const specifier = "0x048a2991c2676296b330734992245f5ba6b98174d3f1907d795b7639e92ce577";
-const zeroAddress = '0x0000000000000000000000000000000000000000'
+//const specifier = "0x048a2991c2676296b330734992245f5ba6b98174d3f1907d795b7639e92ce577";
+//const zeroAddress = '0x0000000000000000000000000000000000000000'
 
-const piecewiseFunction = [3, 0, 0, 2, 10000];
+// const piecewiseFunction = [3, 0, 0, 2, 10000];
 const tokensForOwner = ethers.BigNumber.from("1500000000000000000000000000000");
 const tokensForSubscriber = ethers.BigNumber.from("50000000000000000000000000000");
 const approveTokens = ethers.BigNumber.from("1000000000000000000000000000000");
 
-const dotBound = ethers.BigNumber.from("999");
+//const dotBound = ethers.BigNumber.from("999");
 
-const structurizeCurve = function (parts: any) {
-  const pieces = Array();
+// const structurizeCurve = function (parts: any) {
+//   const pieces = Array();
 
-  let index = 0;
-  let start = 1;
+//   let index = 0;
+//   let start = 1;
 
-  while (index < parts.length) {
-    const length = parts[index];
-    const base = index + 1;
-    const terms = parts.slice(base, base + length);
-    const end = parts[base + length];
+//   while (index < parts.length) {
+//     const length = parts[index];
+//     const base = index + 1;
+//     const terms = parts.slice(base, base + length);
+//     const end = parts[base + length];
 
-    pieces.push({
-      terms,
-      start,
-      end
-    });
+//     pieces.push({
+//       terms,
+//       start,
+//       end
+//     });
 
-    index = base + length + 1;
-    start = end;
-  }
+//     index = base + length + 1;
+//     start = end;
+//   }
 
-  return pieces;
-};
-const calcNextDotCost = function (structurizedCurve: any, total: any) {
-  if (total < 0) {
-    return 0;
-  }
+//   return pieces;
+// };
+// const calcNextDotCost = function (structurizedCurve: any, total: any) {
+//   if (total < 0) {
+//     return 0;
+//   }
 
 
-  for (let i = 0; i < structurizedCurve.length; i++) {
-    if (structurizedCurve[i].start <= total && total <= structurizedCurve[i].end) {
-      return _calculatePolynomial(structurizedCurve[i].terms, total);
-    }
-  }
+  // for (let i = 0; i < structurizedCurve.length; i++) {
+  //   if (structurizedCurve[i].start <= total && total <= structurizedCurve[i].end) {
+  //     return _calculatePolynomial(structurizedCurve[i].terms, total);
+  //   }
+  // }
 
-  return 0;
-};
+//   return 0;
+// };
 
-const calcDotsCost = function (structurizedCurve: any, numDots: any) {
-  let cost = 0;
+// const calcDotsCost = function (structurizedCurve: any, numDots: any) {
+//   let cost = 0;
 
-  for (let i = 1; i <= numDots; i++) {
-    cost += calcNextDotCost(structurizedCurve, i);
-  }
+//   for (let i = 1; i <= numDots; i++) {
+//     cost += calcNextDotCost(structurizedCurve, i);
+//   }
 
-  return cost;
-};
+//   return cost;
+// };
 
 //TODO move these functions to another file
 
-function _calculatePolynomial(terms: any, x: any) {
-  let sum = 0;
+// function _calculatePolynomial(terms: any, x: any) {
+//   let sum = 0;
 
-  for (let i = 0; i < terms.length; i++) {
-    sum += terms[i] * (x ** i);
-  }
+//   for (let i = 0; i < terms.length; i++) {
+//     sum += terms[i] * (x ** i);
+//   }
 
-  return sum;
-}
+//   return sum;
+// }
 
 async function main() {
 
@@ -90,14 +91,15 @@ async function main() {
 
   let owner = signers[0]
 
-  let subscriberAddress = signers[1];
+  // let subscriberAddress = signers[1];
 
-  let OracleSigner = signers[2];
+  // let OracleSigner = signers[2];
   let broker = signers[3];
 
-  let escrower = signers[4];
-  let escrower2 = signers[5];
-  let arbiter_ = signers[6];
+  // let escrower = signers[4];
+  // let escrower2 = signers[5];
+  // let arbiter_ = signers[6];
+
 
   const tokenFactory = await ethers.getContractFactory('ZapToken', signers[0]);
   const zapToken = await tokenFactory.deploy();
@@ -105,38 +107,50 @@ async function main() {
 
   const coordinator = await ethers.getContractFactory('ZapCoordinator', signers[0]);
   const Coordinator = await coordinator.deploy();
+  await Coordinator.deployed();
 
   const arbiter = await ethers.getContractFactory('Arbiter', signers[0]);
   const Arbiter = await arbiter.deploy(Coordinator.address);
+  await Arbiter.deployed();
 
   const currentcost = await ethers.getContractFactory('CurrentCost', signers[0])
   const CurrentCost = await currentcost.deploy(Coordinator.address);
+  await CurrentCost.deployed();
 
   const database = await ethers.getContractFactory('Database', signers[0])
   const Database = await database.deploy();
-
+  await Database.deployed();
+  
   const dispatch = await ethers.getContractFactory('Dispatch', signers[0])
   const Dispatch = await dispatch.deploy(Coordinator.address);
-  console.log(`Dispatch address is ${Dispatch.address}`)
+  await Dispatch.deployed();
+  
   const faucetContract = await ethers.getContractFactory('Faucet', signers[0]);
   const faucet = await faucetContract.deploy(zapToken.address);
   await faucet.deployed();
 
+  
   const registry = await ethers.getContractFactory('Registry', signers[0])
   const Registry = await registry.deploy(Coordinator.address);
+  await Registry.deployed();
   // Transfer ownership before creating bondage contract
 
   await Database.transferOwnership(Coordinator.address);
 
   const bondage = await ethers.getContractFactory('Bondage', signers[0]);
-  const Bondage = await bondage.deploy(Coordinator.address);
- 
+  const Bondage = await bondage.deploy(Coordinator.address, 
+    
+    //{ gasLimit: 500000, gasPrice: 21000 }
+    
+    
+    );
+  await Bondage.deployed();
  
   await Coordinator.addImmutableContract('DATABASE', Database.address);
   await Coordinator.addImmutableContract('ARBITER', Arbiter.address);
   await Coordinator.addImmutableContract('FAUCET', faucet.address);
   await Coordinator.addImmutableContract('ZAP_TOKEN', zapToken.address);
-  //await Coordinator.addImmutableContract('DISPATCH', Dispatch.address)
+  //await Coordinator.addImmutableContract('DISPATCH', Dispatch.address);
   //await Coordinator.addImmutableContract('BONDAGE', Bondage.address);
   await Coordinator.updateContract('REGISTRY', Registry.address);
   await Coordinator.updateContract('CURRENT_COST', CurrentCost.address);
@@ -150,10 +164,10 @@ async function main() {
   await hre.run('initiateProvider')
   await hre.run('initiateProviderCurve')
 
-  // await Registry.connect(OracleSigner).initiateProvider(publicKey, title);
-  // await Registry.connect(OracleSigner).initiateProviderCurve(specifier, piecewiseFunction, zeroAddress);
+  //await Registry.connect(OracleSigner).initiateProvider(publicKey, title);
+  //await Registry.connect(OracleSigner).initiateProviderCurve(specifier, piecewiseFunction, zeroAddress);
 
-  // Approve the amount of Zap
+  //Approve the amount of Zap
   await zapToken.allocate(owner.address, tokensForOwner)
   await zapToken.allocate(broker.address, tokensForSubscriber)
   await zapToken.connect(broker).approve(Bondage.address, approveTokens)
@@ -170,7 +184,12 @@ async function main() {
     zapToken.address,
     Dispatch.address,
     Bondage.address,
-    Registry.address
+    Registry.address,
+
+    // {
+    //   gasPrice: 82000,
+    //   gasLimit: 9000000
+    // }
   ))
 
   const offchainsubscriber = (await offchainSubscriberFactory.deploy(
@@ -178,7 +197,13 @@ async function main() {
     Dispatch.address,
     Bondage.address,
     Registry.address,  
-  ))
+  
+    // {
+    //   gasPrice: 82000,
+    //   gasLimit: 9000000
+    // }
+  
+    ))
 
   await subscriber.deployed();
   await offchainsubscriber.deployed();
@@ -192,6 +217,8 @@ async function main() {
     'DotFactoryFactory',
     signers[0]
   );
+ console.log('DotFactoryFactory');
+  
   const genericTokenFactory = await ethers.getContractFactory(
     'TokenFactory',
     signers[0]
@@ -199,7 +226,8 @@ async function main() {
   let generictoken = (await genericTokenFactory.deploy());
   await generictoken.deployed();
   await dotFactoryFactory.deploy(Coordinator.address, generictoken.address);
-  
+ 
+
 
 }
 
