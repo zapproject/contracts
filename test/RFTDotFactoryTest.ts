@@ -239,6 +239,8 @@ describe('Testing', () => {
     await expect(curveTokenAddr).to.not.equal(zeroAddress);
   });
     it('TOKEN_DOT_FACTORY_10 -deploy through dot factory Factory ', async function () {
+     // Purpose of dot factory factory is to allow a user to create their own ERC1155 market without having to memorize
+     // the address of the current zapcoordinator or the erc1155 itself
     let factory = await RFTDotFactoryFactoryInstance.deployFactory(77,title,fee);
     // let rftDotFactoryFactory.deploy(coordinator.address, RFTTokenFactory.address) as unknown as RftDotFactoryFactory;
     let factories=await RFTDotFactoryFactoryInstance.getFactories();
